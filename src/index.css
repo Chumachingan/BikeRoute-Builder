@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Premium glow background effect */
+#root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 50%, rgba(56, 189, 248, 0.05) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.leaflet-container,
+.mapboxgl-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.card-shadow {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-shadow:hover {
+  box-shadow: 0 25px 50px rgba(16, 185, 129, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: pageEnter 0.35s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Button animations */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+button:active::after {
+  width: 300px;
+  height: 300px;
+}
+
