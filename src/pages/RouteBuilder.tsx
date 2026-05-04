@@ -80,45 +80,51 @@ export default function RouteBuilder() {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    const map = new maplibregl.Map({
-      container: mapContainer.current,
-      style: MAP_STYLES[mapStyle].url,
-      center: [-58.3816, -34.6037],
-      zoom: 3,
-    });
-
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.on('click', (event) => {
-      const newPoint: LatLng = { lat: event.lngLat.lat, lng: event.lngLat.lng };
-      addPoint(newPoint);
-    });
-
-    map.on('load', () => {
-      map.addSource('route', { type: 'geojson', data: routeLine });
-      map.addLayer({
-        id: 'route-line',
-        type: 'line',
-        source: 'route',
-        paint: {
-          'line-color': '#10b981',
-          'line-width': 5,
-        },
+    try {
+      const map = new maplibregl.Map({
+        container: mapContainer.current,
+        style: MAP_STYLES[mapStyle].url,
+        center: [-58.3816, -34.6037],
+        zoom: 3,
       });
-      map.addSource('points', { type: 'geojson', data: pointLayerData });
-      map.addLayer({
-        id: 'route-points',
-        type: 'circle',
-        source: 'points',
-        paint: {
-          'circle-radius': 6,
-          'circle-color': '#0ea5e9',
-          'circle-stroke-color': '#fff',
-          'circle-stroke-width': 2,
-        },
-      });
-    });
 
-    mapRef.current = map;
+      map.addControl(new maplibregl.NavigationControl(), 'top-right');
+      map.on('click', (event) => {
+        const newPoint: LatLng = { lat: event.lngLat.lat, lng: event.lngLat.lng };
+        addPoint(newPoint);
+      });
+
+      map.on('load', () => {
+        map.addSource('route', { type: 'geojson', data: routeLine });
+        map.addLayer({
+          id: 'route-line',
+          type: 'line',
+          source: 'route',
+          paint: {
+            'line-color': '#10b981',
+            'line-width': 5,
+          },
+        });
+        map.addSource('points', { type: 'geojson', data: pointLayerData });
+        map.addLayer({
+          id: 'route-points',
+          type: 'circle',
+          source: 'points',
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#0ea5e9',
+            'circle-stroke-color': '#fff',
+            'circle-stroke-width': 2,
+          },
+        });
+      });
+
+      mapRef.current = map;
+    } catch (err: any) {
+      const errorMsg = err?.message || 'Error al cargar el mapa';
+      setMessage(`Error: No se puede inicializar el mapa. ${errorMsg}`);
+      console.error('Map initialization error:', err);
+    }
   }, []);
 
   useEffect(() => {

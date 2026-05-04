@@ -7,6 +7,9 @@ import { exportGPX } from '../services/gpxService';
 import { RouteRecord } from '../types/route';
 import { Button } from '../components/ui/Button';
 import { formatDistance } from '../utils/geoUtils';
+import { useGPS } from '../hooks/useGPS';
+import { GPSTracker } from '../components/GPSTracker';
+import { MapFallback } from '../components/MapFallback';
 
 const MAP_STYLES = {
   voyager: {
@@ -49,9 +52,15 @@ export default function RouteDetail() {
   const [route, setRoute] = useState<RouteRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [mapError, setMapError] = useState(false);
   const [mapStyle, setMapStyle] = useState<keyof typeof MAP_STYLES>('voyager');
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const gpsMarkerRef = useRef<maplibregl.Marker | null>(null);
+
+  const { gpsState, routeProgress, startTracking, stopTracking } = useGPS(
+    route?.coordinates || []
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -64,44 +73,80 @@ export default function RouteDetail() {
 
   useEffect(() => {
     if (!route || !mapContainer.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: mapContainer.current,
-      style: MAP_STYLES[mapStyle].url,
-      center: [route.coordinates[0].lng, route.coordinates[0].lat],
-      zoom: 10,
-    });
+    
+    try {
+      const map = new maplibregl.Map({
+        container: mapContainer.current,
+        style: MAP_STYLES[mapStyle].url,
+        center: [route.coordinates[0].lng, route.coordinates[0].lat],
+        zoom: 10,
+      });
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.on('load', () => {
-      map.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'LineString',
-                coordinates: route.coordinates.map((point) => [point.lng, point.lat]),
+      map.addControl(new maplibregl.NavigationControl(), 'top-right');
+      map.on('load', () => {
+        map.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'LineString',
+                  coordinates: route.coordinates.map((point) => [point.lng, point.lat]),
+                },
               },
-            },
-          ],
-        },
+            ],
+          },
+        });
+
+        map.addLayer({
+          id: 'route-line',
+          type: 'line',
+          source: 'route',
+          paint: {
+            'line-color': '#10b981',
+            'line-width': 6,
+          },
+        });
       });
 
-      map.addLayer({
-        id: 'route-line',
-        type: 'line',
-        source: 'route',
-        paint: {
-          'line-color': '#10b981',
-          'line-width': 6,
-        },
-      });
-    });
-
-    mapRef.current = map;
+      mapRef.current = map;
+    } catch (err: any) {
+      const errorMsg = err?.message || 'Error al cargar el mapa';
+      setMapError(true);
+      console.error('Map initialization error:', err);
+    }
   }, [route, mapStyle]);
+
+  // Manejar actualizaciones del marcador GPS
+  useEffect(() => {
+    if (!mapRef.current || !gpsState.currentLocation) return;
+
+    if (gpsMarkerRef.current) {
+      gpsMarkerRef.current.setLngLat([gpsState.currentLocation.lng, gpsState.currentLocation.lat]);
+    } else {
+      // Crear marcador GPS
+      const el = document.createElement('div');
+      el.className = 'gps-marker';
+      el.innerHTML = `
+        <div class="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 border-2 border-white shadow-lg flex items-center justify-center">
+          <div class="w-2 h-2 rounded-full bg-white"></div>
+        </div>
+      `;
+
+      gpsMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat([gpsState.currentLocation.lng, gpsState.currentLocation.lat])
+        .addTo(mapRef.current);
+    }
+
+    // Auto-centrar en la ubicación actual (opcional)
+    // mapRef.current.flyTo({
+    //   center: [gpsState.currentLocation.lng, gpsState.currentLocation.lat],
+    //   zoom: 15,
+    //   duration: 1000,
+    // });
+  }, [gpsState.currentLocation]);
 
   const handleExport = () => {
     if (!route) return;
@@ -146,17 +191,32 @@ export default function RouteDetail() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <motion.div 
-          className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
-          whileHover={{ y: -2 }}
-          transition={{ type: "spring", stiffness: 250, damping: 20 }}
-        >
-          <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
-            <div ref={mapContainer} className="h-full w-full" />
-          </div>
-        </motion.div>
+        {mapError ? (
+          <MapFallback 
+            coordinates={route.coordinates}
+            routeName={route.name}
+            distanceKm={route.distance_km}
+          />
+        ) : (
+          <motion.div 
+            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 250, damping: 20 }}
+          >
+            <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
+              <div ref={mapContainer} className="h-full w-full" />
+            </div>
+          </motion.div>
+        )}
 
         <div className="space-y-6">
+          <GPSTracker 
+            gpsState={gpsState}
+            routeProgress={routeProgress}
+            onStartTracking={startTracking}
+            onStopTracking={stopTracking}
+          />
+
           <motion.div 
             className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
             whileHover={{ y: -4, scale: 1.02 }}
