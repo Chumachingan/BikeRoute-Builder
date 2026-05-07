@@ -43,7 +43,7 @@ export default function RouteBuilder() {
   const [routeName, setRouteName] = useState('Mi ruta de bici');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('Haz clic en el mapa para agregar puntos.');
-  const [mapStyle, setMapStyle] = useState<keyof typeof MAP_STYLES>('osm_bright');
+  const [mapStyle, setMapStyle] = useState<keyof typeof MAP_STYLES>('voyager');
 
   const pointLayerData = useMemo(
     () => ({
