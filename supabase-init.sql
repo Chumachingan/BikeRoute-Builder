@@ -12,8 +12,20 @@ create table if not exists public.routes (
   created_at timestamp with time zone default now()
 );
 
+-- Enable Row Level Security
 alter table public.routes enable row level security;
 
+-- Grant access to authenticated users
+grant select, insert, update, delete
+  on public.routes
+  to authenticated;
+
+-- Grant access to service_role (for backend operations)
+grant select, insert, update, delete
+  on public.routes
+  to service_role;
+
+-- RLS Policies
 create policy "Users can manage their own routes" on public.routes
   for all
   using (auth.uid() = user_id);
