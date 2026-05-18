@@ -26,6 +26,9 @@ grant select, insert, update, delete
   to service_role;
 
 -- RLS Policies
+drop policy if exists "Users can manage their own routes" on public.routes;
+drop policy if exists "Users can insert their own routes" on public.routes;
+
 create policy "Users can manage their own routes" on public.routes
   for all
   using (auth.uid() = user_id);
