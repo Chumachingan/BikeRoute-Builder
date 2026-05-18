@@ -39,16 +39,17 @@ export default function RouteBuilder() {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { points, totalDistance, addPoint, removeLastPoint, reset, setPoints } = useMapRoute();
+  const { points, waypoints, totalDistance, addPoint, removeLastPoint, reset, isCalculatingRoute, bikeProfile, changeProfile } = useMapRoute();
   const [routeName, setRouteName] = useState('Mi ruta de bici');
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('Haz clic en el mapa para agregar puntos.');
+  const [message, setMessage] = useState('Haz clic en el mapa para agregar 2 puntos y la ruta se trazará automáticamente.');
   const [mapStyle, setMapStyle] = useState<keyof typeof MAP_STYLES>('voyager');
 
+  // Usar waypoints para mostrar los puntos en el mapa (solo inicio y final)
   const pointLayerData = useMemo(
     () => ({
       type: 'FeatureCollection' as const,
-      features: points.map((point) => ({
+      features: waypoints.map((point) => ({
         type: 'Feature' as const,
         properties: null,
         geometry: {
@@ -57,9 +58,10 @@ export default function RouteBuilder() {
         },
       })),
     }),
-    [points]
+    [waypoints]
   );
 
+  // Usar points para dibujar la línea completa de la ruta
   const routeLine = useMemo(
     () => ({
       type: 'FeatureCollection' as const,
@@ -141,11 +143,11 @@ export default function RouteBuilder() {
     routeSource.setData(routeLine);
     const pointSource = map.getSource('points') as maplibregl.GeoJSONSource;
     pointSource?.setData(pointLayerData);
-  }, [points, pointLayerData, routeLine]);
+  }, [waypoints, pointLayerData, routeLine]);
 
   const handleSave = async () => {
     if (!user) return;
-    if (points.length < 2) {
+    if (waypoints.length < 2) {
       setMessage('Agrega al menos 2 puntos para guardar una ruta.');
       return;
     }
@@ -190,8 +192,10 @@ export default function RouteBuilder() {
           <span>ℹ️ Instrucciones</span>
         </h2>
         <ul className="mt-4 space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-400 list-disc list-inside">
-          <li>Haz clic en el mapa para crear puntos</li>
-          <li>Se dibujará automáticamente la línea de tu ruta</li>
+          <li>Haz clic en el mapa para crear un punto de inicio</li>
+          <li>Haz clic en otro punto para crear el destino</li>
+          <li>La ruta se trazará automáticamente por la ruta más corta 🚴</li>
+          <li>Puedes agregar más puntos de parada si lo deseas</li>
           <li>Usa los botones para borrar puntos o reiniciar</li>
           <li>Guarda la ruta para calcular elevación y superficie</li>
         </ul>
@@ -225,10 +229,24 @@ export default function RouteBuilder() {
             </select>
           </div>
 
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Tipo de bicicleta:</label>
+            <select
+              value={bikeProfile}
+              onChange={(e) => changeProfile(e.target.value as 'balanced' | 'gravel' | 'road' | 'mtb')}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
+            >
+              <option value="balanced">🚴 Balanceada (carreteras locales + caminos)</option>
+              <option value="road">🏁 Ruta (carreteras asfaltadas)</option>
+              <option value="gravel">🏞️ Gravel (grava + caminos de tierra)</option>
+              <option value="mtb">⛰️ MTB (senderos y pistas de montaña)</option>
+            </select>
+          </div>
+
           <div className="grid gap-3 grid-cols-2">
             <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
               <p className="text-xs sm:text-sm text-slate-400">Puntos</p>
-              <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{points.length}</p>
+              <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{waypoints.length}</p>
             </div>
             <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
               <p className="text-xs sm:text-sm text-slate-400">Distancia</p>
@@ -236,11 +254,19 @@ export default function RouteBuilder() {
             </div>
           </div>
 
+          {isCalculatingRoute && (
+            <div className="rounded-xl bg-blue-900/30 border border-blue-500/50 p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-blue-300 flex items-center gap-2">
+                <span className="animate-spin">🔄</span> Calculando ruta más corta...
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Button 
               variant="danger" 
               onClick={removeLastPoint} 
-              disabled={points.length === 0}
+              disabled={waypoints.length === 0}
               size="sm"
               className="flex-1"
             >
@@ -249,7 +275,7 @@ export default function RouteBuilder() {
             <Button 
               variant="ghost" 
               onClick={reset} 
-              disabled={points.length === 0}
+              disabled={waypoints.length === 0}
               size="sm"
               className="flex-1"
             >
@@ -276,7 +302,7 @@ export default function RouteBuilder() {
         <p className="mt-2 text-sm text-slate-400">Necesitas mínimo 2 puntos para guardar</p>
         
         <div className="mt-4 sm:mt-6 flex flex-col gap-3">
-          <Button onClick={handleSave} disabled={saving || points.length < 2} size="lg" className="w-full">
+          <Button onClick={handleSave} disabled={saving || waypoints.length < 2} size="lg" className="w-full">
             {saving ? 'Guardando...' : 'Guardar ruta'}
           </Button>
           <p className={`text-xs sm:text-sm ${saving ? 'text-slate-400' : message.includes('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{message}</p>
