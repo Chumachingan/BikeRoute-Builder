@@ -179,25 +179,25 @@ export default function RouteBuilder() {
 
   return (
     <motion.section 
-      className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]"
+      className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-[1.1fr_0.9fr]"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
+        <div className="mb-4 sm:mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-widest text-slate-500">Route Builder</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-100">Dibuja tu ruta en el mapa</h1>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-semibold text-slate-100">Dibuja tu ruta en el mapa</h1>
           </div>
-          <div className="space-x-3">
-            <Button variant="secondary" onClick={removeLastPoint} disabled={points.length === 0}>Borrar último punto</Button>
-            <Button variant="secondary" onClick={reset} disabled={points.length === 0}>Reiniciar ruta</Button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+            <Button variant="secondary" onClick={removeLastPoint} disabled={points.length === 0}>Borrar último</Button>
+            <Button variant="secondary" onClick={reset} disabled={points.length === 0}>Reiniciar</Button>
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-slate-300 mb-2">Estilo de mapa:</label>
+          <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Estilo de mapa:</label>
           <select
             value={mapStyle}
             onChange={(e) => setMapStyle(e.target.value as keyof typeof MAP_STYLES)}
@@ -211,19 +211,19 @@ export default function RouteBuilder() {
           </select>
         </div>
 
-        <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
+        <div className="h-[300px] sm:h-[400px] lg:h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
           <div ref={mapContainer} className="h-full w-full" />
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <motion.div 
-          className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
+          className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
           whileHover={{ y: -4, scale: 1.02 }}
           transition={{ type: "spring", stiffness: 250, damping: 20 }}
         >
-          <h2 className="text-xl font-semibold text-slate-100">Resumen de la ruta</h2>
-          <div className="mt-4 space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Resumen de la ruta</h2>
+          <div className="mt-4 space-y-3 sm:space-y-4">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-300">Nombre de la ruta</label>
               <input
@@ -232,27 +232,27 @@ export default function RouteBuilder() {
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
               />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-4">
-                <p className="text-sm text-slate-400">Puntos</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-100">{points.length}</p>
+            <div className="grid gap-3 grid-cols-2">
+              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-slate-400">Puntos</p>
+                <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{points.length}</p>
               </div>
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-4">
-                <p className="text-sm text-slate-400">Distancia</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-100">{totalDistance.toFixed(2)} km</p>
+              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-slate-400">Distancia</p>
+                <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{totalDistance.toFixed(2)} km</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-4 sm:mt-6 flex flex-col gap-3">
             <Button onClick={handleSave} disabled={saving || points.length < 2}>Guardar ruta</Button>
-            <p className={`text-sm ${saving ? 'text-slate-400' : message.includes('Error') ? 'text-red-400' : 'text-slate-400'}`}>{message}</p>
+            <p className={`text-xs sm:text-sm ${saving ? 'text-slate-400' : message.includes('Error') ? 'text-red-400' : 'text-slate-400'}`}>{message}</p>
           </div>
         </motion.div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-slate-100">Instrucciones</h2>
-          <ul className="mt-4 space-y-3 text-slate-400">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Instrucciones</h2>
+          <ul className="mt-4 space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-400">
             <li>Haz clic en el mapa para crear puntos.</li>
             <li>Se dibujará automáticamente la línea de tu ruta.</li>
             <li>Guarda la ruta para calcular elevación, superficie y dificultad.</li>

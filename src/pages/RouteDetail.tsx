@@ -161,36 +161,36 @@ export default function RouteDetail() {
   };
 
   if (loading) {
-    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-8 text-slate-400">Cargando ruta...</div>;
+    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6 sm:p-8 text-slate-400">Cargando ruta...</div>;
   }
 
   if (error || !route) {
-    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-8 text-red-400">{error || 'Ruta no encontrada'}</div>;
+    return <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6 sm:p-8 text-red-400">{error || 'Ruta no encontrada'}</div>;
   }
 
   return (
     <motion.section 
-      className="space-y-8"
+      className="space-y-6 sm:space-y-8"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-widest text-slate-500">Detalle de ruta</p>
-            <div className="mt-2 flex items-center gap-3">
-              <h1 className="text-3xl font-semibold text-slate-100">{route.name}</h1>
-              <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${getDifficultyColor(route.difficulty)}`}>
+            <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <h1 className="text-2xl sm:text-3xl font-semibold text-slate-100 truncate">{route.name}</h1>
+              <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold whitespace-nowrap ${getDifficultyColor(route.difficulty)}`}>
                 {route.difficulty}
               </span>
             </div>
           </div>
-          <Button onClick={handleExport}>Exportar GPX</Button>
+          <Button onClick={handleExport} className="w-full sm:w-auto">Exportar GPX</Button>
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         {mapError ? (
           <MapFallback 
             coordinates={route.coordinates}
@@ -199,17 +199,17 @@ export default function RouteDetail() {
           />
         ) : (
           <motion.div 
-            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
+            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
             whileHover={{ y: -2 }}
             transition={{ type: "spring", stiffness: 250, damping: 20 }}
           >
-            <div className="h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
+            <div className="h-[300px] sm:h-[400px] lg:h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
               <div ref={mapContainer} className="h-full w-full" />
             </div>
           </motion.div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <GPSTracker 
             gpsState={gpsState}
             routeProgress={routeProgress}
@@ -218,34 +218,34 @@ export default function RouteDetail() {
           />
 
           <motion.div 
-            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
+            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
             whileHover={{ y: -4, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 250, damping: 20 }}
           >
-            <h2 className="text-xl font-semibold text-slate-100">Estadísticas</h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-5">
-                <p className="text-sm text-slate-400">Distancia</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-100">{formatDistance(route.distance_km)}</p>
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Estadísticas</h2>
+            <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-5">
+                <p className="text-xs sm:text-sm text-slate-400">Distancia</p>
+                <p className="mt-2 text-lg sm:text-2xl font-semibold text-slate-100">{formatDistance(route.distance_km)}</p>
               </div>
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-5">
-                <p className="text-sm text-slate-400">Desnivel</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-100">{route.elevation_gain_m} m</p>
+              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-5">
+                <p className="text-xs sm:text-sm text-slate-400">Desnivel</p>
+                <p className="mt-2 text-lg sm:text-2xl font-semibold text-slate-100">{route.elevation_gain_m} m</p>
               </div>
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-5">
-                <p className="text-sm text-slate-400">Superficie gravel + dirt</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-100">{route.surface_stats.gravel + route.surface_stats.dirt}%</p>
+              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-5 sm:col-span-2 lg:col-span-1">
+                <p className="text-xs sm:text-sm text-slate-400">Superficie gravel + dirt</p>
+                <p className="mt-2 text-lg sm:text-2xl font-semibold text-slate-100">{route.surface_stats.gravel + route.surface_stats.dirt}%</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div 
-            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-6"
+            className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
             whileHover={{ y: -4, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 250, damping: 20 }}
           >
-            <h2 className="text-xl font-semibold text-slate-100">Distribución por superficie</h2>
-            <div className="mt-5 space-y-3 text-sm text-slate-400">
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Distribución por superficie</h2>
+            <div className="mt-4 sm:mt-5 space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-400">
               <div className="flex items-center justify-between gap-4">
                 <span>Asfalto</span>
                 <span className="font-semibold text-slate-100">{route.surface_stats.asphalt}%</span>
