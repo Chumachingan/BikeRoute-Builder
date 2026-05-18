@@ -84,8 +84,8 @@ export default function RouteBuilder() {
       const map = new maplibregl.Map({
         container: mapContainer.current,
         style: MAP_STYLES[mapStyle].url,
-        center: [-58.3816, -34.6037],
-        zoom: 3,
+        center: [-3.8100, 43.4600], // Santander, España
+        zoom: 11,
       });
 
       map.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -179,86 +179,109 @@ export default function RouteBuilder() {
 
   return (
     <motion.section 
-      className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-[1.1fr_0.9fr]"
+      className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
+      {/* Instrucciones al inicio */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
-        <div className="mb-4 sm:mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-widest text-slate-500">Route Builder</p>
-            <h1 className="mt-2 text-2xl sm:text-3xl font-semibold text-slate-100">Dibuja tu ruta en el mapa</h1>
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-100 flex items-center gap-2">
+          <span>ℹ️ Instrucciones</span>
+        </h2>
+        <ul className="mt-4 space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-400 list-disc list-inside">
+          <li>Haz clic en el mapa para crear puntos</li>
+          <li>Se dibujará automáticamente la línea de tu ruta</li>
+          <li>Usa los botones para borrar puntos o reiniciar</li>
+          <li>Guarda la ruta para calcular elevación y superficie</li>
+        </ul>
+      </div>
+
+      {/* Configuración y controles */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-300">Nombre de la ruta</label>
+            <input
+              value={routeName}
+              onChange={(e) => setRouteName(e.target.value)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
+              placeholder="Mi ruta de bici"
+            />
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
-            <Button variant="secondary" onClick={removeLastPoint} disabled={points.length === 0}>Borrar último</Button>
-            <Button variant="secondary" onClick={reset} disabled={points.length === 0}>Reiniciar</Button>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Estilo de mapa:</label>
+            <select
+              value={mapStyle}
+              onChange={(e) => setMapStyle(e.target.value as keyof typeof MAP_STYLES)}
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
+            >
+              {Object.entries(MAP_STYLES).map(([key, { name }]) => (
+                <option key={key} value={key}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-3 grid-cols-2">
+            <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-slate-400">Puntos</p>
+              <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{points.length}</p>
+            </div>
+            <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
+              <p className="text-xs sm:text-sm text-slate-400">Distancia</p>
+              <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{totalDistance.toFixed(2)} km</p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              variant="danger" 
+              onClick={removeLastPoint} 
+              disabled={points.length === 0}
+              size="sm"
+              className="flex-1"
+            >
+              Borrar último
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={reset} 
+              disabled={points.length === 0}
+              size="sm"
+              className="flex-1"
+            >
+              Reiniciar
+            </Button>
           </div>
         </div>
+      </div>
 
-        <div className="mb-4">
-          <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Estilo de mapa:</label>
-          <select
-            value={mapStyle}
-            onChange={(e) => setMapStyle(e.target.value as keyof typeof MAP_STYLES)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
-          >
-            {Object.entries(MAP_STYLES).map(([key, { name }]) => (
-              <option key={key} value={key}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="h-[300px] sm:h-[400px] lg:h-[520px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
+      {/* Mapa */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
+        <div className="h-[400px] sm:h-[500px] overflow-hidden rounded-xl border border-slate-800 shadow-lg">
           <div ref={mapContainer} className="h-full w-full" />
         </div>
       </div>
 
-      <div className="space-y-4 sm:space-y-6">
-        <motion.div 
-          className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
-          whileHover={{ y: -4, scale: 1.02 }}
-          transition={{ type: "spring", stiffness: 250, damping: 20 }}
-        >
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Resumen de la ruta</h2>
-          <div className="mt-4 space-y-3 sm:space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-300">Nombre de la ruta</label>
-              <input
-                value={routeName}
-                onChange={(e) => setRouteName(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/40"
-              />
-            </div>
-            <div className="grid gap-3 grid-cols-2">
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-slate-400">Puntos</p>
-                <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{points.length}</p>
-              </div>
-              <div className="rounded-xl bg-slate-800/50 border border-slate-700 p-3 sm:p-4">
-                <p className="text-xs sm:text-sm text-slate-400">Distancia</p>
-                <p className="mt-2 text-xl sm:text-2xl font-semibold text-slate-100">{totalDistance.toFixed(2)} km</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 sm:mt-6 flex flex-col gap-3">
-            <Button onClick={handleSave} disabled={saving || points.length < 2}>Guardar ruta</Button>
-            <p className={`text-xs sm:text-sm ${saving ? 'text-slate-400' : message.includes('Error') ? 'text-red-400' : 'text-slate-400'}`}>{message}</p>
-          </div>
-        </motion.div>
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Instrucciones</h2>
-          <ul className="mt-4 space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-400">
-            <li>Haz clic en el mapa para crear puntos.</li>
-            <li>Se dibujará automáticamente la línea de tu ruta.</li>
-            <li>Guarda la ruta para calcular elevación, superficie y dificultad.</li>
-          </ul>
+      {/* Resumen y guardar */}
+      <motion.div 
+        className="rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-lg p-4 sm:p-6"
+        whileHover={{ y: -4, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 250, damping: 20 }}
+      >
+        <h2 className="text-lg sm:text-xl font-semibold text-slate-100">Guardar ruta</h2>
+        <p className="mt-2 text-sm text-slate-400">Necesitas mínimo 2 puntos para guardar</p>
+        
+        <div className="mt-4 sm:mt-6 flex flex-col gap-3">
+          <Button onClick={handleSave} disabled={saving || points.length < 2} size="lg" className="w-full">
+            {saving ? 'Guardando...' : 'Guardar ruta'}
+          </Button>
+          <p className={`text-xs sm:text-sm ${saving ? 'text-slate-400' : message.includes('Error') ? 'text-red-400' : 'text-emerald-400'}`}>{message}</p>
         </div>
-      </div>
+      </motion.div>
     </motion.section>
   );
 }

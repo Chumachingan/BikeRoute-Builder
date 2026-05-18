@@ -60,5 +60,3 @@ export function RouteCard({ route, onDelete }: Props) {
     </motion.div>
   );
 }
-  );
-}
